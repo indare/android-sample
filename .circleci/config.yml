@@ -6,7 +6,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/android:api-23-alpha
     working_directory: ~/repo
 
     environment:
@@ -35,7 +35,7 @@ jobs:
           name: make apk file
           command: ./gradlew clean assembleDebug
 
-      - run: "no tests ;)"
+      - run: echo "no tests ;)"
 
       - store_artifacts:
           path: /app/build/outputs/apk/debug/app-debug.apk

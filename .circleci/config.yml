@@ -20,8 +20,7 @@ jobs:
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "build.gradle" }}
-          - v1-dependencies-
-          - android-dependencies
+          - android-dependencies-{{ checksum "app/build.gradle" }}
 
       - run:
           name: install gradle dependencies
@@ -41,10 +40,11 @@ jobs:
             - /opt/android/sdk/tools
             - /opt/android/sdk/platforms/android-17
             - /opt/android/sdk/platforms/android-23
+            - /opt/android/sdk/platforms/android-26
             - /opt/android/sdk/add-ons/addon-google_apis-google-17/
             - /opt/android/sdk/add-ons/addon-google_apis-google-23/
             - /opt/android/sdk/build-tools/23.0.2/
-          key: android-dependencies
+          key: android-dependencies-{{ checksum "app/build.gradle" }}
 
       - run:
           name: make apk file

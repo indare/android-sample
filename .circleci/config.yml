@@ -5,6 +5,10 @@
 version: 2
 jobs:
   build:
+    branches:
+      only:
+        - master
+
     docker:
       - image: circleci/android:api-23-alpha
     working_directory: ~/repo
@@ -19,38 +23,34 @@ jobs:
 
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
-          - android-dependencies-{{ checksum "app/build.gradle" }}
+            - v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum "app/build.gradle" }}
 
       - run:
-          name: install gradle dependencies
-          command: ./gradlew dependencies
+          name: Install Dependencies
+          command: |
+              ./gradlew dependencies
+              if [ ! -e $ANDROID_HOME/build-tools/23.0.2 ]; then sdkmanager "build-tools;23.0.2"; fi
+              if ! $(grep -q "Pkg.Revision=3" $ANDROID_HOME/platforms/android-17/source.properties); then sdkmanager "platforms;android-17"; fi
+              if ! $(grep -q "Pkg.Revision=3" $ANDROID_HOME/platforms/android-23/source.properties); then sdkmanager "platforms;android-23"; fi
+              if ! $(grep -q "Pkg.Revision=2" $ANDROID_HOME/platforms/android-26/source.properties); then sdkmanager "platforms;android-26"; fi
+              if [ ! -e $ANDROID_HOME/add-ons/addon-google_apis-google-17 ]; then sdkmanager "add-ons;addon-google_apis-google-17"; fi
+              if [ ! -e $ANDROID_HOME/add-ons/addon-google_apis-google-23 ]; then sdkmanager "add-ons;addon-google_apis-google-23"; fi
 
       - save_cache:
           paths:
-            - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
-
-      - run:
-          name: Install Android Dependencies
-          command: sdkmanager "build-tools;23.0.2" "platforms;android-23" "platforms;android-17" "add-ons;addon-google_apis-google-17" "add-ons;addon-google_apis-google-23"
-
-      - save_cache:
-          paths:
-            - /opt/android/sdk/tools
-            - /opt/android/sdk/platforms/android-17
-            - /opt/android/sdk/platforms/android-23
-            - /opt/android/sdk/platforms/android-26
-            - /opt/android/sdk/add-ons/addon-google_apis-google-17/
-            - /opt/android/sdk/add-ons/addon-google_apis-google-23/
-            - /opt/android/sdk/build-tools/23.0.2/
-          key: android-dependencies-{{ checksum "app/build.gradle" }}
+              - ~/.gradle
+              - /opt/android/sdk/tools
+              - /opt/android/sdk/platforms/android-17
+              - /opt/android/sdk/platforms/android-23
+              - /opt/android/sdk/platforms/android-26
+              - /opt/android/sdk/add-ons/addon-google_apis-google-17/
+              - /opt/android/sdk/add-ons/addon-google_apis-google-23/
+              - /opt/android/sdk/build-tools/23.0.2/
+          key: v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum "app/build.gradle" }}
 
       - run:
           name: make apk file
           command: ./gradlew clean assembleDebug
-
-      - run: echo "no tests ;)"
 
       - store_artifacts:
           path: /app/build/outputs/apk/debug/app-debug.apk

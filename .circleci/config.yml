@@ -21,6 +21,7 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "build.gradle" }}
           - v1-dependencies-
+          - android-dependencies
 
       - run:
           name: install gradle dependencies
@@ -30,6 +31,20 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      - run:
+          name: Install Android Dependencies
+          command: sdkmanager "build-tools;23.0.2" "platforms;android-23" "platforms;android-17" "add-ons;addon-google_apis-google-17" "add-ons;addon-google_apis-google-23"
+
+      - save_cache:
+          paths:
+            - /opt/android/sdk/tools
+            - /opt/android/sdk/platforms/android-17
+            - /opt/android/sdk/platforms/android-23
+            - /opt/android/sdk/add-ons/addon-google_apis-google-17/
+            - /opt/android/sdk/add-ons/addon-google_apis-google-23/
+            - /opt/android/sdk/build-tools/23.0.2/
+          key: android-dependencies
 
       - run:
           name: make apk file
